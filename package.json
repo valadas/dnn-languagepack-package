@@ -1,0 +1,29 @@
+{
+  "name": "dnn-languagepack-package",
+  "version": "1.0.0",
+  "description": "Packages Dnn language packs",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/valadas/dnn-languagepack-package.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/valadas/dnn-languagepack-package/issues"
+  },
+  "homepage": "https://github.com/valadas/dnn-languagepack-package#readme",
+  "devDependencies": {
+    "@types/node": "^13.13.4",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "@actions/core": "^1.2.3",
+    "@actions/github": "^2.1.1"
+  }
+}
