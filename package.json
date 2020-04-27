@@ -2,7 +2,7 @@
   "name": "dnn-languagepack-package",
   "version": "1.0.0",
   "description": "Packages Dnn language packs",
-  "main": "index.js",
+  "main": "debug.js",
   "private": true,
   "scripts": {
     "build": "tsc",
