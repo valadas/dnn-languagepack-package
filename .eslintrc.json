@@ -16,12 +16,14 @@
                 "bracketSpacing": false,
                 "printWidth": 120,
                 "tabWidth": 2,
-                "semi": false
+                "semi": true,
+                "endOfLine": "auto"
             }
         ],
         // octokit/rest requires parameters that are not in camelcase
         "camelcase": "off",
-        "@typescript-eslint/camelcase": ["error", {"properties": "never"}]
+        "@typescript-eslint/camelcase": ["error", {"properties": "never"}],
+        "linebreak-style": "off"
     },
     "env": {
         "node": true,
