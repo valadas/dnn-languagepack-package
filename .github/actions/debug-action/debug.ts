@@ -9,6 +9,7 @@ const run = async (): Promise<void> => {
     // console.log({payload: github.context.payload});
 
     const gh = new github.GitHub({
+        auth: '',
         userAgent: 'Package Language Pack',
     });
     const repo = gh.repos.get({
