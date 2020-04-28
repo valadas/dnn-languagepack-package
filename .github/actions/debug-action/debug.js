@@ -8,10 +8,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(require("@actions/core"));
-const github = __importStar(require("@actions/github"));
+//import * as github from '@actions/github';
 const rest_1 = require("@octokit/rest");
 const fs_1 = require("fs");
 const xml2js = __importStar(require("xml2js"));
+const child_process_1 = require("child_process");
 const version = {
     tag: '',
     major: 0,
@@ -72,27 +73,28 @@ const setManifestVersion = () => new Promise((resolve, reject) => {
         reject(err);
     });
 });
-const commitManifest = async () => {
+const commitManifest = () => new Promise((resolve, reject) => {
     console.log('Commiting manifest...');
-    // auth
-    const octo = new rest_1.Octokit({
-        auth: process.env['INPUT_REPO_TOKEN'],
+    child_process_1.exec('git add *.dnn', (err, stdout, stderr) => {
+        if (err) {
+            reject({ err, stderr });
+        }
+        console.log(stdout);
     });
-    // get commit and tree sha
-    const { data: refData } = await octo.git.getRef({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        ref: `heads/${github.context.ref}`,
+    child_process_1.exec('git commit -m "Commiting new Dnn version to manifest"', (err, stdout, stderr) => {
+        if (err) {
+            reject({ err, stderr });
+        }
+        console.log(stdout);
     });
-    const commitSha = refData.object.sha;
-    const { data: commitData } = await octo.git.getCommit({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        commit_sha: commitSha,
+    child_process_1.exec('git push', (err, stdout, stderr) => {
+        if (err) {
+            reject({ err, stderr });
+        }
+        console.log(stdout);
     });
-    const treeSha = commitData.tree.sha;
-    console.log(treeSha);
-};
+    resolve();
+});
 const run = async () => {
     const octokit = new rest_1.Octokit({
         auth: '',
@@ -107,7 +109,9 @@ const run = async () => {
         formatVersion(fullfilled.data.tag_name);
         console.log('Latest Dnn Release: ', version);
         setManifestVersion().then(() => {
-            commitManifest();
+            commitManifest()
+                .then(() => console.log('Manifest commited'))
+                .catch(err => console.error(err));
         });
     }, rejected => {
         console.log(rejected);

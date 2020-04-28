@@ -1,8 +1,9 @@
 import * as core from '@actions/core';
-import * as github from '@actions/github';
+//import * as github from '@actions/github';
 import {Octokit} from '@octokit/rest';
 import {readdirSync, writeFile, readFileSync} from 'fs';
 import * as xml2js from 'xml2js';
+import {exec} from 'child_process';
 
 const version = {
     tag: '',
@@ -71,29 +72,30 @@ const setManifestVersion = (): Promise<void> =>
             });
     });
 
-const commitManifest = async (): Promise<void> => {
-    console.log('Commiting manifest...');
+const commitManifest = (): Promise<void> =>
+    new Promise<void>((resolve, reject) => {
+        console.log('Commiting manifest...');
 
-    // auth
-    const octo = new Octokit({
-        auth: core.getInput('repo-token'),
+        exec('git add *.dnn', (err, stdout, stderr) => {
+            if (err) {
+                reject({err, stderr});
+            }
+            console.log(stdout);
+        });
+        exec('git commit -m "Commiting new Dnn version to manifest"', (err, stdout, stderr) => {
+            if (err) {
+                reject({err, stderr});
+            }
+            console.log(stdout);
+        });
+        exec('git push', (err, stdout, stderr) => {
+            if (err) {
+                reject({err, stderr});
+            }
+            console.log(stdout);
+        });
+        resolve();
     });
-
-    // get commit and tree sha
-    const {data: refData} = await octo.git.getRef({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        ref: `heads/${github.context.ref}`,
-    });
-    const commitSha = refData.object.sha;
-    const {data: commitData} = await octo.git.getCommit({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        commit_sha: commitSha,
-    });
-    const treeSha = commitData.tree.sha;
-    console.log(treeSha);
-};
 
 const run = async (): Promise<void> => {
     const octokit = new Octokit({
@@ -112,7 +114,9 @@ const run = async (): Promise<void> => {
                 console.log('Latest Dnn Release: ', version);
 
                 setManifestVersion().then(() => {
-                    commitManifest();
+                    commitManifest()
+                        .then(() => console.log('Manifest commited'))
+                        .catch(err => console.error(err));
                 });
             },
             rejected => {
