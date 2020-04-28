@@ -24,6 +24,7 @@
   "devDependencies": {
     "@types/jest": "^25.2.1",
     "@types/node": "^13.13.4",
+    "@types/xml2js": "^0.4.5",
     "@typescript-eslint/eslint-plugin": "^2.30.0",
     "@typescript-eslint/parser": "^2.30.0",
     "eslint": "^6.8.0",
@@ -37,6 +38,7 @@
   "dependencies": {
     "@actions/core": "^1.2.3",
     "@actions/github": "^2.1.1",
-    "@octokit/rest": "^17.6.0"
+    "@octokit/rest": "^17.6.0",
+    "xml2js": "^0.4.23"
   }
 }

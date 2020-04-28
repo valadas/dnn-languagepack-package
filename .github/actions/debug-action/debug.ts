@@ -1,5 +1,7 @@
-//import * as core from '@actions/core';
+import * as core from '@actions/core';
 import {Octokit} from '@octokit/rest';
+import {readdirSync, writeFile, readFileSync} from 'fs';
+import * as xml2js from 'xml2js';
 
 const version = {
     tag: '',
@@ -26,6 +28,45 @@ const formatVersion = (tagName: string): void => {
         version.patch.toString().padStart(2, '0');
 };
 
+const setManifestVersion = (): void => {
+    const manifest = readdirSync('./Resources').filter(f => f.match(/.*\.dnn/))[0];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    console.log('Found manifest file: ', manifest);
+
+    // Read the manifest
+    const manifestFile = readFileSync('./Resources/' + manifest);
+    const parser = new xml2js.Parser();
+    parser
+        .parseStringPromise(manifestFile.toString())
+        .then(result => {
+            // Update manifest versions
+            const packages = result.dotnetnuke.packages;
+            for (let i = 0; i < packages[0].package.length; i++) {
+                const dnnPackage = result.dotnetnuke.packages[0].package[i];
+                dnnPackage.$.version = version.manifestSafeVersionString;
+                console.log(`Set ${dnnPackage.$.name} to version ${dnnPackage.$.version}`);
+            }
+
+            // Write back the manifest
+            const builder = new xml2js.Builder({
+                headless: true,
+                cdata: true,
+            });
+            const newManifestXml = builder.buildObject(result);
+            writeFile('./Resources/' + manifest, newManifestXml, err => {
+                if (err) {
+                    console.log(err.message);
+                    core.setFailed(err.message);
+                } else {
+                    console.log('Saved changes to ', manifest);
+                }
+            });
+        })
+        .catch(err => {
+            console.error(err);
+        });
+};
+
 const run = async (): Promise<void> => {
     const octokit = new Octokit({
         auth: '',
@@ -41,6 +82,8 @@ const run = async (): Promise<void> => {
             fullfilled => {
                 formatVersion(fullfilled.data.tag_name);
                 console.log('Latest Dnn Release: ', version);
+
+                setManifestVersion();
             },
             rejected => {
                 console.log(rejected);
