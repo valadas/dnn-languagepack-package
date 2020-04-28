@@ -17,7 +17,8 @@
                 "printWidth": 120,
                 "tabWidth": 4,
                 "semi": true,
-                "endOfLine": "auto"
+                "endOfLine": "auto",
+                "arrowParens": "avoid"
             }
         ],
         // octokit/rest requires parameters that are not in camelcase

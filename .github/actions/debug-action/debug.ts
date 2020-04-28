@@ -12,11 +12,17 @@ const run = async (): Promise<void> => {
         auth: '',
         userAgent: 'Package Language Pack',
     });
-    const repo = gh.repos.get({
-        owner: 'dnnsoftware',
-        repo: 'dnnplatform',
-    });
-    console.log(repo);
+    gh.repos
+        .get({
+            owner: 'dnnsoftware',
+            repo: 'dnnplatform',
+        })
+        .then(repo => {
+            console.log(repo);
+        })
+        .catch(reason => {
+            core.error(reason);
+        });
 };
 
 run();

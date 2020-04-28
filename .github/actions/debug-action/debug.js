@@ -14,7 +14,22 @@ const run = async () => {
     const message = `👏 Hello! You are an amazing ${creature}! 🙌`;
     core.debug(message);
     core.setOutput('amazing-message', message);
-    console.log({ payload: github.context.payload });
+    // console.log({payload: github.context.payload});
+    const gh = new github.GitHub({
+        auth: '',
+        userAgent: 'Package Language Pack',
+    });
+    gh.repos
+        .get({
+        owner: 'dnnsoftware',
+        repo: 'dnnplatform',
+    })
+        .then(repo => {
+        console.log(repo);
+    })
+        .catch(reason => {
+        core.error(reason);
+    });
 };
 run();
 exports.default = run;
