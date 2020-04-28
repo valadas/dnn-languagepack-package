@@ -8,7 +8,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(require("@actions/core"));
-//import * as github from '@actions/github';
+const github = __importStar(require("@actions/github"));
 const rest_1 = require("@octokit/rest");
 const fs_1 = require("fs");
 const xml2js = __importStar(require("xml2js"));
@@ -33,7 +33,7 @@ const formatVersion = (tagName) => {
             '.' +
             version.patch.toString().padStart(2, '0');
 };
-const setManifestVersion = () => {
+const setManifestVersion = () => new Promise((resolve, reject) => {
     const manifest = fs_1.readdirSync('./Resources').filter(f => f.match(/.*\.dnn/))[0];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     console.log('Found manifest file: ', manifest);
@@ -63,21 +63,37 @@ const setManifestVersion = () => {
             }
             else {
                 console.log('Saved changes to ', manifest);
+                resolve();
             }
         });
     })
         .catch(err => {
         console.error(err);
+        reject(err);
     });
-};
-const commitManifest = () => {
-    // const octokit = new github.GitHub({
-    //     auth: github.context.actor.
-    // })
-    // const currentCommit = await
+});
+const commitManifest = async () => {
+    console.log('Commiting manifest...');
+    // auth
+    const octo = new rest_1.Octokit({
+        auth: process.env['INPUT_REPO_TOKEN'],
+    });
+    // get commit and tree sha
+    const { data: refData } = await octo.git.getRef({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        ref: `heads/${github.context.ref}`,
+    });
+    const commitSha = refData.object.sha;
+    const { data: commitData } = await octo.git.getCommit({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        commit_sha: commitSha,
+    });
+    const treeSha = commitData.tree.sha;
+    console.log(treeSha);
 };
 const run = async () => {
-    console.log(process.env['INPUT_REPO-TOKEN']);
     const octokit = new rest_1.Octokit({
         auth: '',
         userAgent: 'Language pack packaging',
@@ -90,9 +106,9 @@ const run = async () => {
         .then(fullfilled => {
         formatVersion(fullfilled.data.tag_name);
         console.log('Latest Dnn Release: ', version);
-        setManifestVersion();
-        console.log(process.env);
-        commitManifest();
+        setManifestVersion().then(() => {
+            commitManifest();
+        });
     }, rejected => {
         console.log(rejected);
     })

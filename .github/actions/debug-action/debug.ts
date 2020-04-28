@@ -1,5 +1,5 @@
 import * as core from '@actions/core';
-//import * as github from '@actions/github';
+import * as github from '@actions/github';
 import {Octokit} from '@octokit/rest';
 import {readdirSync, writeFile, readFileSync} from 'fs';
 import * as xml2js from 'xml2js';
@@ -29,47 +29,70 @@ const formatVersion = (tagName: string): void => {
         version.patch.toString().padStart(2, '0');
 };
 
-const setManifestVersion = (): void => {
-    const manifest = readdirSync('./Resources').filter(f => f.match(/.*\.dnn/))[0];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    console.log('Found manifest file: ', manifest);
+const setManifestVersion = (): Promise<void> =>
+    new Promise((resolve, reject) => {
+        const manifest = readdirSync('./Resources').filter(f => f.match(/.*\.dnn/))[0];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        console.log('Found manifest file: ', manifest);
 
-    // Read the manifest
-    const manifestFile = readFileSync('./Resources/' + manifest);
-    const parser = new xml2js.Parser();
-    parser
-        .parseStringPromise(manifestFile.toString())
-        .then(result => {
-            // Update manifest versions
-            const packages = result.dotnetnuke.packages;
-            for (let i = 0; i < packages[0].package.length; i++) {
-                const dnnPackage = result.dotnetnuke.packages[0].package[i];
-                dnnPackage.$.version = version.manifestSafeVersionString;
-                console.log(`Set ${dnnPackage.$.name} to version ${dnnPackage.$.version}`);
-            }
-
-            // Write back the manifest
-            const builder = new xml2js.Builder({
-                headless: true,
-                cdata: true,
-            });
-            const newManifestXml = builder.buildObject(result);
-            writeFile('./Resources/' + manifest, newManifestXml, err => {
-                if (err) {
-                    console.log(err.message);
-                    core.setFailed(err.message);
-                } else {
-                    console.log('Saved changes to ', manifest);
+        // Read the manifest
+        const manifestFile = readFileSync('./Resources/' + manifest);
+        const parser = new xml2js.Parser();
+        parser
+            .parseStringPromise(manifestFile.toString())
+            .then(result => {
+                // Update manifest versions
+                const packages = result.dotnetnuke.packages;
+                for (let i = 0; i < packages[0].package.length; i++) {
+                    const dnnPackage = result.dotnetnuke.packages[0].package[i];
+                    dnnPackage.$.version = version.manifestSafeVersionString;
+                    console.log(`Set ${dnnPackage.$.name} to version ${dnnPackage.$.version}`);
                 }
-            });
-        })
-        .catch(err => {
-            console.error(err);
-        });
-};
 
-const commitManifest = (): void => {
+                // Write back the manifest
+                const builder = new xml2js.Builder({
+                    headless: true,
+                    cdata: true,
+                });
+                const newManifestXml = builder.buildObject(result);
+                writeFile('./Resources/' + manifest, newManifestXml, err => {
+                    if (err) {
+                        console.log(err.message);
+                        core.setFailed(err.message);
+                    } else {
+                        console.log('Saved changes to ', manifest);
+                        resolve();
+                    }
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                reject(err);
+            });
+    });
+
+const commitManifest = async (): Promise<void> => {
     console.log('Commiting manifest...');
+
+    // auth
+    const octo = new Octokit({
+        auth: core.getInput('repo-token'),
+    });
+
+    // get commit and tree sha
+    const {data: refData} = await octo.git.getRef({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        ref: `heads/${github.context.ref}`,
+    });
+    const commitSha = refData.object.sha;
+    const {data: commitData} = await octo.git.getCommit({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        commit_sha: commitSha,
+    });
+    const treeSha = commitData.tree.sha;
+    console.log(treeSha);
 };
 
 const run = async (): Promise<void> => {
@@ -88,8 +111,9 @@ const run = async (): Promise<void> => {
                 formatVersion(fullfilled.data.tag_name);
                 console.log('Latest Dnn Release: ', version);
 
-                setManifestVersion();
-                commitManifest();
+                setManifestVersion().then(() => {
+                    commitManifest();
+                });
             },
             rejected => {
                 console.log(rejected);
