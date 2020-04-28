@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+import {Octokit} from '@octokit/rest';
 
 const run = async (): Promise<void> => {
     const creature = core.getInput('amazing-creature');
@@ -8,11 +9,11 @@ const run = async (): Promise<void> => {
     core.setOutput('amazing-message', message);
     // console.log({payload: github.context.payload});
 
-    const gh = new github.GitHub({
-        auth: '',
-        userAgent: 'Package Language Pack',
+    const octokit = new Octokit({
+        userAgent: 'Language pack packaging',
     });
-    gh.repos
+
+    octokit.repos
         .get({
             owner: 'dnnsoftware',
             repo: 'dnnplatform',
@@ -21,7 +22,7 @@ const run = async (): Promise<void> => {
             console.log(repo);
         })
         .catch(reason => {
-            core.error(reason);
+            core.setFailed(reason);
         });
 };
 
