@@ -1,4 +1,5 @@
 import * as core from '@actions/core';
+//import * as github from '@actions/github';
 import {Octokit} from '@octokit/rest';
 import {readdirSync, writeFile, readFileSync} from 'fs';
 import * as xml2js from 'xml2js';
@@ -67,7 +68,16 @@ const setManifestVersion = (): void => {
         });
 };
 
+const commitManifest = (): void => {
+    // const octokit = new github.GitHub({
+    //     auth: github.context.actor.
+    // })
+    // const currentCommit = await
+    console.log(process.env);
+};
+
 const run = async (): Promise<void> => {
+    console.log('process.env: ', process.env);
     const octokit = new Octokit({
         auth: '',
         userAgent: 'Language pack packaging',
@@ -84,6 +94,8 @@ const run = async (): Promise<void> => {
                 console.log('Latest Dnn Release: ', version);
 
                 setManifestVersion();
+                console.log(process.env);
+                commitManifest();
             },
             rejected => {
                 console.log(rejected);

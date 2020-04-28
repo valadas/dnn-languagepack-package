@@ -13,6 +13,6 @@ jobs:
       - run: npm run build
       - uses: ./.github/actions/debug-action
         with:
-          amazing-creature: Octocat
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
         id: debug
       - run: echo There was an amazing message - ${{ steps.debug.outputs.amazing-message }}

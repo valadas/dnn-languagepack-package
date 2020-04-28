@@ -8,6 +8,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(require("@actions/core"));
+//import * as github from '@actions/github';
 const rest_1 = require("@octokit/rest");
 const fs_1 = require("fs");
 const xml2js = __importStar(require("xml2js"));
@@ -69,7 +70,15 @@ const setManifestVersion = () => {
         console.error(err);
     });
 };
+const commitManifest = () => {
+    // const octokit = new github.GitHub({
+    //     auth: github.context.actor.
+    // })
+    // const currentCommit = await
+    console.log(process.env);
+};
 const run = async () => {
+    console.log('process.env: ', process.env);
     const octokit = new rest_1.Octokit({
         auth: '',
         userAgent: 'Language pack packaging',
@@ -83,6 +92,8 @@ const run = async () => {
         formatVersion(fullfilled.data.tag_name);
         console.log('Latest Dnn Release: ', version);
         setManifestVersion();
+        console.log(process.env);
+        commitManifest();
     }, rejected => {
         console.log(rejected);
     })

@@ -2,10 +2,9 @@ name: 'debug-action'
 description: 'Outputs debug information'
 author: 'valadas'
 inputs:
-  amazing-creature:
-    description: What kind of amazing creature are you?
-    required: false
-    default: person
+  repo-token:
+    description: Authentication token for the repository
+    required: true
 outputs:
   amazing-message:
     description: We said something nice, this was what we said.
