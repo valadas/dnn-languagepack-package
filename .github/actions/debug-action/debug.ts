@@ -69,15 +69,10 @@ const setManifestVersion = (): void => {
 };
 
 const commitManifest = (): void => {
-    // const octokit = new github.GitHub({
-    //     auth: github.context.actor.
-    // })
-    // const currentCommit = await
-    console.log(process.env);
+    console.log('Commiting manifest...');
 };
 
 const run = async (): Promise<void> => {
-    console.log('process.env: ', process.env);
     const octokit = new Octokit({
         auth: '',
         userAgent: 'Language pack packaging',
@@ -94,7 +89,6 @@ const run = async (): Promise<void> => {
                 console.log('Latest Dnn Release: ', version);
 
                 setManifestVersion();
-                console.log(process.env);
                 commitManifest();
             },
             rejected => {

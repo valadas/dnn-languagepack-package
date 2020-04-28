@@ -75,10 +75,9 @@ const commitManifest = () => {
     //     auth: github.context.actor.
     // })
     // const currentCommit = await
-    console.log(process.env);
 };
 const run = async () => {
-    console.log('process.env: ', process.env);
+    console.log(process.env['INPUT_REPO-TOKEN']);
     const octokit = new rest_1.Octokit({
         auth: '',
         userAgent: 'Language pack packaging',
