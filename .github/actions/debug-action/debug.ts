@@ -1,28 +1,54 @@
-import * as core from '@actions/core';
+//import * as core from '@actions/core';
 import {Octokit} from '@octokit/rest';
 
-const run = async (): Promise<void> => {
-    const creature = core.getInput('amazing-creature');
-    const message = `👏 Hello! You are an amazing ${creature}! 🙌`;
-    core.debug(message);
-    core.setOutput('amazing-message', message);
-    // console.log({payload: github.context.payload});
+const version = {
+    tag: '',
+    major: 0,
+    minor: 0,
+    patch: 0,
+    manifestSafeVersionString: '',
+};
 
+const formatVersion = (tagName: string): void => {
+    version.tag = tagName;
+
+    const regex = /[^0-9.]/;
+    const numbers = tagName.replace(regex, '').split('.');
+    version.major = parseInt(numbers[0]);
+    version.minor = parseInt(numbers[1]);
+    version.patch = parseInt(numbers[2]);
+
+    version.manifestSafeVersionString =
+        version.major.toString().padStart(2, '0') +
+        '.' +
+        version.minor.toString().padStart(2, '0') +
+        '.' +
+        version.patch.toString().padStart(2, '0');
+};
+
+const run = async (): Promise<void> => {
     const octokit = new Octokit({
+        auth: '',
         userAgent: 'Language pack packaging',
     });
 
-    octokit.repos
-        .get({
+    const repo = octokit.repos
+        .getLatestRelease({
             owner: 'dnnsoftware',
-            repo: 'dnnplatform',
+            repo: 'Dnn.Platform',
         })
-        .then(repo => {
-            console.log(repo);
-        })
-        .catch(reason => {
-            core.setFailed(reason);
-        });
+        .then(
+            fullfilled => {
+                formatVersion(fullfilled.data.tag_name);
+                console.log('Latest Dnn Release: ', version);
+            },
+            rejected => {
+                console.log(rejected);
+            },
+        )
+        .catch(error => console.log(error));
+
+    console.log(repo);
 };
 
 run();

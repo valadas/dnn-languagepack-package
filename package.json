@@ -7,7 +7,8 @@
   "scripts": {
     "build": "tsc",
     "lint": "eslint . --ext .ts",
-    "test": "tsc --noEmit && jest"
+    "test": "tsc --noEmit && jest",
+    "start": "tsc && node .\\.github\\actions\\debug-action\\debug.js"
   },
   "repository": {
     "type": "git",
