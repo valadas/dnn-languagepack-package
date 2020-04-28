@@ -6,7 +6,16 @@ const run = async (): Promise<void> => {
     const message = `👏 Hello! You are an amazing ${creature}! 🙌`;
     core.debug(message);
     core.setOutput('amazing-message', message);
-    console.log({payload: github.context.payload});
+    // console.log({payload: github.context.payload});
+
+    const gh = new github.GitHub({
+        userAgent: 'Package Language Pack',
+    });
+    const repo = gh.repos.get({
+        owner: 'dnnsoftware',
+        repo: 'dnnplatform',
+    });
+    console.log(repo);
 };
 
 run();
