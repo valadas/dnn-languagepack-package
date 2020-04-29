@@ -94,6 +94,7 @@ const commitManifest = async (): Promise<void> => {
 };
 
 const run = async (): Promise<void> => {
+    console.log(github.context);
     const octokit = new Octokit({
         auth: '',
         userAgent: 'Language pack packaging',
