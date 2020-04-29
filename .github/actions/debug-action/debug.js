@@ -12,7 +12,7 @@ const core = __importStar(require("@actions/core"));
 const rest_1 = require("@octokit/rest");
 const fs_1 = require("fs");
 const xml2js = __importStar(require("xml2js"));
-const child_process_1 = require("child_process");
+const exec_1 = require("@actions/exec");
 const version = {
     tag: '',
     major: 0,
@@ -73,28 +73,18 @@ const setManifestVersion = () => new Promise((resolve, reject) => {
         reject(err);
     });
 });
-const commitManifest = () => new Promise((resolve, reject) => {
+const commitManifest = async () => {
     console.log('Commiting manifest...');
-    child_process_1.exec('git add *.dnn', (err, stdout, stderr) => {
-        if (err) {
-            reject({ err, stderr });
-        }
-        console.log(stdout);
-    });
-    child_process_1.exec('git commit -m "Commiting new Dnn version to manifest"', (err, stdout, stderr) => {
-        if (err) {
-            reject({ err, stderr });
-        }
-        console.log(stdout);
-    });
-    child_process_1.exec('git push', (err, stdout, stderr) => {
-        if (err) {
-            reject({ err, stderr });
-        }
-        console.log(stdout);
-    });
-    resolve();
-});
+    try {
+        await exec_1.exec('git add *.dnn');
+        await exec_1.exec('git commit -m "Commits latest Dnn release version to manifest."');
+        await exec_1.exec('git push');
+        Promise.resolve();
+    }
+    catch (error) {
+        Promise.reject(error);
+    }
+};
 const run = async () => {
     const octokit = new rest_1.Octokit({
         auth: '',
