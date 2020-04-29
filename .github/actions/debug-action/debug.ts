@@ -4,6 +4,8 @@ import {Octokit} from '@octokit/rest';
 import {readdirSync, writeFile, readFileSync} from 'fs';
 import * as xml2js from 'xml2js';
 import {exec} from '@actions/exec';
+import * as artifact from '@actions/artifact';
+import * as glob from '@actions/glob';
 
 const version = {
     tag: '',
@@ -95,6 +97,19 @@ const commitManifest = async (): Promise<void> => {
     }
 };
 
+const publishArtifact = async () => {
+    // Get the files
+    const patterns = ['**/Resources/*'];
+    const globber = await glob.create(patterns.join('\n'));
+    const files = await globber.glob();
+
+    // Publish the artifact
+    const artifactClient = artifact.create();
+    const uploadResult = await artifactClient.uploadArtifact(github.context.repo.repo, files, '/Resources', {
+        continueOnError: true,
+    });
+};
+
 const run = async (): Promise<void> => {
     console.log(github.context);
     const octokit = new Octokit({
@@ -114,7 +129,11 @@ const run = async (): Promise<void> => {
 
                 setManifestVersion().then(() => {
                     commitManifest()
-                        .then(() => console.log('Manifest commited'))
+                        .then(() => {
+                            console.log('Manifest commited');
+                            console.log('Publishing artifact');
+                            publishArtifact();
+                        })
                         .catch(err => console.error(err));
                 });
             },
