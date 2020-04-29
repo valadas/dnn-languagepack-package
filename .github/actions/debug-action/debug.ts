@@ -105,9 +105,14 @@ const publishArtifact = async () => {
 
     // Publish the artifact
     const artifactClient = artifact.create();
-    const uploadResult = await artifactClient.uploadArtifact(github.context.repo.repo, files, './Resources', {
-        continueOnError: true,
-    });
+    const uploadResult = await artifactClient.uploadArtifact(
+        `${github.context.repo.repo}_${version.manifestSafeVersionString}`,
+        files,
+        './Resources',
+        {
+            continueOnError: true,
+        },
+    );
     console.log(uploadResult.artifactName + ' published.');
 };
 
