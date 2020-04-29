@@ -13,6 +13,8 @@ const rest_1 = require("@octokit/rest");
 const fs_1 = require("fs");
 const xml2js = __importStar(require("xml2js"));
 const exec_1 = require("@actions/exec");
+const artifact = __importStar(require("@actions/artifact"));
+const glob = __importStar(require("@actions/glob"));
 const version = {
     tag: '',
     major: 0,
@@ -81,7 +83,7 @@ const commitManifest = async () => {
         await exec_1.exec(`git config user.name ${github.context.payload.pusher.name}`);
         await exec_1.exec('git commit -m "Commits latest Dnn release version to manifest."');
         if (core.getInput('repo-token')) {
-            await exec_1.exec(`git push https://${github.context.actor}:${core.getInput('repo-token')}@github.com/${github.context.repo.repo}.git`);
+            await exec_1.exec(`git push https://${github.context.actor}:${core.getInput('repo-token')}@github.com/${github.context.repo.owner}/${github.context.repo.repo}.git`);
         }
         else {
             await exec_1.exec('git push');
@@ -91,6 +93,18 @@ const commitManifest = async () => {
     catch (error) {
         Promise.reject(error);
     }
+};
+const publishArtifact = async () => {
+    // Get the files
+    const patterns = ['**/Resources/*'];
+    const globber = await glob.create(patterns.join('\n'));
+    const files = await globber.glob();
+    // Publish the artifact
+    const artifactClient = artifact.create();
+    const uploadResult = await artifactClient.uploadArtifact(github.context.repo.repo, files, './Resources', {
+        continueOnError: true,
+    });
+    console.log(uploadResult.artifactName + ' published.');
 };
 const run = async () => {
     console.log(github.context);
@@ -108,7 +122,11 @@ const run = async () => {
         console.log('Latest Dnn Release: ', version);
         setManifestVersion().then(() => {
             commitManifest()
-                .then(() => console.log('Manifest commited'))
+                .then(() => {
+                console.log('Manifest commited');
+                console.log('Publishing artifact');
+                publishArtifact();
+            })
                 .catch(err => console.error(err));
         });
     }, rejected => {
