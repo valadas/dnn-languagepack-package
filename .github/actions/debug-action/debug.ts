@@ -1,5 +1,5 @@
 import * as core from '@actions/core';
-//import * as github from '@actions/github';
+import * as github from '@actions/github';
 import {Octokit} from '@octokit/rest';
 import {readdirSync, writeFile, readFileSync} from 'fs';
 import * as xml2js from 'xml2js';
@@ -78,7 +78,15 @@ const commitManifest = async (): Promise<void> => {
     try {
         await exec('git add *.dnn');
         await exec('git commit -m "Commits latest Dnn release version to manifest."');
-        await exec('git push');
+        if (core.getInput('repo-token')) {
+            await exec(
+                `git push https://${github.context.actor}:${core.getInput('repo-token')}@github.com/${
+                    github.context.repo.owner
+                }/${github.context.repo.repo}.git`,
+            );
+        } else {
+            await exec('git push');
+        }
         Promise.resolve();
     } catch (error) {
         Promise.reject(error);
