@@ -8,7 +8,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(require("@actions/core"));
-//import * as github from '@actions/github';
+const github = __importStar(require("@actions/github"));
 const rest_1 = require("@octokit/rest");
 const fs_1 = require("fs");
 const xml2js = __importStar(require("xml2js"));
@@ -77,8 +77,15 @@ const commitManifest = async () => {
     console.log('Commiting manifest...');
     try {
         await exec_1.exec('git add *.dnn');
+        await exec_1.exec(`git config user.email ${github.context.payload.pusher.email}`);
+        await exec_1.exec(`git config user.name ${github.context.payload.pusher.name}`);
         await exec_1.exec('git commit -m "Commits latest Dnn release version to manifest."');
-        await exec_1.exec('git push');
+        if (core.getInput('repo-token')) {
+            await exec_1.exec(`git push https://${github.context.actor}:${core.getInput('repo-token')}@github.com/${github.context.repo.repo}.git`);
+        }
+        else {
+            await exec_1.exec('git push');
+        }
         Promise.resolve();
     }
     catch (error) {
@@ -86,6 +93,7 @@ const commitManifest = async () => {
     }
 };
 const run = async () => {
+    console.log(github.context);
     const octokit = new rest_1.Octokit({
         auth: '',
         userAgent: 'Language pack packaging',

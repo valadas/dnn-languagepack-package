@@ -77,6 +77,8 @@ const commitManifest = async (): Promise<void> => {
 
     try {
         await exec('git add *.dnn');
+        await exec(`git config user.email ${github.context.payload.pusher.email}`);
+        await exec(`git config user.name ${github.context.payload.pusher.name}`);
         await exec('git commit -m "Commits latest Dnn release version to manifest."');
         if (core.getInput('repo-token')) {
             await exec(
