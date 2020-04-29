@@ -99,7 +99,7 @@ const commitManifest = async (): Promise<void> => {
 
 const publishArtifact = async () => {
     // Get the files
-    const patterns = ['**/Resources/*'];
+    const patterns = ['**/Resources/*', '!**/node_modules/**'];
     const globber = await glob.create(patterns.join('\n'));
     const files = await globber.glob();
 
