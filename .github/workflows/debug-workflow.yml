@@ -14,7 +14,7 @@ jobs:
         id: greet
         with:
           who-to-greet: Language Packs
-      - run: echo The greeting is ${{ steps.greet.greeting }}
+      - run: echo The greeting is ${{ steps.greet.outputs.greeting }}
       - run: npm install
       - run: npm run build
       - uses: ./.github/actions/debug-action
