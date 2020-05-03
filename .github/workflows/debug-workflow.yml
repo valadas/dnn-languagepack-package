@@ -13,7 +13,7 @@ jobs:
         uses: valadas/gh-action-template@develop
         id: ghTemplate
         with:
-          who-to-greet: Language Pack
+          who-to-greet: Language Packs
       - run: echo The greeting is ${{ steps.ghTemplate.greeting }}
       - run: npm install
       - run: npm run build
