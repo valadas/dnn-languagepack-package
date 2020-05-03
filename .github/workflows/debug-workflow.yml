@@ -9,6 +9,11 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
+      - uses: valadas/gh-action-template
+          id: ghTemplate
+          with:
+            who-to-greet: Language Pack
+      - run: echo The greeting is ${{ steps.ghTemplate.greeting }}
       - run: npm install
       - run: npm run build
       - uses: ./.github/actions/debug-action
