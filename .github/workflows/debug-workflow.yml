@@ -11,10 +11,10 @@ jobs:
           fetch-depth: 1
       - name: Hello World
         uses: valadas/gh-action-template@develop
-        id: ghTemplate
+        id: greet
         with:
           who-to-greet: Language Packs
-      - run: echo The greeting is ${{ steps.ghTemplate.greeting }}
+      - run: echo The greeting is ${{ steps.greet.greeting }}
       - run: npm install
       - run: npm run build
       - uses: ./.github/actions/debug-action
