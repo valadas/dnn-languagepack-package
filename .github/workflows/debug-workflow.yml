@@ -9,6 +9,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
+      - name: Get Dnn Version
+        id: dnnVersion
+        uses: valadas/dnn-platform-get-version@develop
+      - run: eche the Dnn version is {{ toJson(steps.dnnVersion.outputs.version }}
       - name: Hello World
         uses: valadas/gh-action-template@develop
         id: greet
