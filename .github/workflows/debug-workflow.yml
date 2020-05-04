@@ -12,7 +12,7 @@ jobs:
       - name: Get Dnn Version
         id: dnnVersion
         uses: valadas/dnn-platform-get-version@develop
-      - run: echo the Dnn version is {{ toJson(steps.dnnVersion.outputs.version) }}
+      - run: echo the Dnn version is ${{ toJson(steps.dnnVersion.outputs.version) }}
       - name: Hello World
         uses: valadas/gh-action-template@develop
         id: greet
