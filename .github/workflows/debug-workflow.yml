@@ -19,6 +19,9 @@ jobs:
              echo minor ${{ steps.dnnVersion.outputs.minor }}
              echo patch ${{ steps.dnnVersion.outputs.patch }}
              echo manifestSafeVersionString ${{ steps.dnnVersion.outputs.manifestSafeVersionString }}
+      - uses: valadas/set-dnn-manifest-versions@develop
+        with:
+          version: ${{ steps.dnnVersion.outputs.manifestSafeVersionString }}
       - run: npm install
       - run: npm run build
       - uses: ./.github/actions/debug-action
