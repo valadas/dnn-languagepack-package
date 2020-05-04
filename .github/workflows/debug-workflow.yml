@@ -22,7 +22,7 @@ jobs:
         uses: valadas/gh-action-template@develop
         id: greet
         with:
-          who-to-greet: Language Packs
+          who-to-greet: Language Pack
       - run: echo The greeting is ${{ steps.greet.outputs.greeting }}
       - run: npm install
       - run: npm run build
