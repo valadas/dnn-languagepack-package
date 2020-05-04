@@ -91,7 +91,9 @@ const publishArtifact = async (version: string) => {
 };
 
 const run = async (): Promise<void> => {
+    console.log(github.context);
     const version = core.getInput('version');
+    console.log('version received: ', version);
     setManifestVersion(version).then(() => {
         commitManifest()
             .then(() => {
