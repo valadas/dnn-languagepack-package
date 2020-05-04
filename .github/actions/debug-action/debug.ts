@@ -1,38 +1,12 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import {Octokit} from '@octokit/rest';
 import {readdirSync, writeFile, readFileSync} from 'fs';
 import * as xml2js from 'xml2js';
 import {exec} from '@actions/exec';
 import * as artifact from '@actions/artifact';
 import * as glob from '@actions/glob';
 
-const version = {
-    tag: '',
-    major: 0,
-    minor: 0,
-    patch: 0,
-    manifestSafeVersionString: '',
-};
-
-const formatVersion = (tagName: string): void => {
-    version.tag = tagName;
-
-    const regex = /[^0-9.]/;
-    const numbers = tagName.replace(regex, '').split('.');
-    version.major = parseInt(numbers[0]);
-    version.minor = parseInt(numbers[1]);
-    version.patch = parseInt(numbers[2]);
-
-    version.manifestSafeVersionString =
-        version.major.toString().padStart(2, '0') +
-        '.' +
-        version.minor.toString().padStart(2, '0') +
-        '.' +
-        version.patch.toString().padStart(2, '0');
-};
-
-const setManifestVersion = (): Promise<void> =>
+const setManifestVersion = (version: string): Promise<void> =>
     new Promise((resolve, reject) => {
         const manifest = readdirSync('./Resources').filter(f => f.match(/.*\.dnn/))[0];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,7 +22,7 @@ const setManifestVersion = (): Promise<void> =>
                 const packages = result.dotnetnuke.packages;
                 for (let i = 0; i < packages[0].package.length; i++) {
                     const dnnPackage = result.dotnetnuke.packages[0].package[i];
-                    dnnPackage.$.version = version.manifestSafeVersionString;
+                    dnnPackage.$.version = version;
                     console.log(`Set ${dnnPackage.$.name} to version ${dnnPackage.$.version}`);
                 }
 
@@ -97,7 +71,7 @@ const commitManifest = async (): Promise<void> => {
     }
 };
 
-const publishArtifact = async () => {
+const publishArtifact = async (version: string) => {
     // Get the files
     const patterns = ['**/Resources/*', '!**/node_modules/**'];
     const globber = await glob.create(patterns.join('\n'));
@@ -106,7 +80,7 @@ const publishArtifact = async () => {
     // Publish the artifact
     const artifactClient = artifact.create();
     const uploadResult = await artifactClient.uploadArtifact(
-        `${github.context.repo.repo}_${version.manifestSafeVersionString}`,
+        `${github.context.repo.repo}_${version}`,
         files,
         './Resources',
         {
@@ -117,39 +91,16 @@ const publishArtifact = async () => {
 };
 
 const run = async (): Promise<void> => {
-    console.log(github.context);
-    const octokit = new Octokit({
-        auth: '',
-        userAgent: 'Language pack packaging',
+    const version = core.getInput('version');
+    setManifestVersion(version).then(() => {
+        commitManifest()
+            .then(() => {
+                console.log('Manifest commited');
+                console.log('Publishing artifact');
+                publishArtifact(version);
+            })
+            .catch(err => console.error(err));
     });
-
-    const repo = octokit.repos
-        .getLatestRelease({
-            owner: 'dnnsoftware',
-            repo: 'Dnn.Platform',
-        })
-        .then(
-            fullfilled => {
-                formatVersion(fullfilled.data.tag_name);
-                console.log('Latest Dnn Release: ', version);
-
-                setManifestVersion().then(() => {
-                    commitManifest()
-                        .then(() => {
-                            console.log('Manifest commited');
-                            console.log('Publishing artifact');
-                            publishArtifact();
-                        })
-                        .catch(err => console.error(err));
-                });
-            },
-            rejected => {
-                console.log(rejected);
-            },
-        )
-        .catch(error => console.log(error));
-
-    console.log(repo);
 };
 
 run();

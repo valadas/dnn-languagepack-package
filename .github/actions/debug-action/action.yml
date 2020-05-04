@@ -5,6 +5,10 @@ inputs:
   repo-token:
     description: Authentication token for the repository
     required: true
+  version:
+    description: The version to set the manifests to
+    default: '0.1.0'
+    required: false
 outputs:
   amazing-message:
     description: We said something nice, this was what we said.

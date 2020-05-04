@@ -13,16 +13,11 @@ jobs:
         id: dnnVersion
         uses: valadas/dnn-platform-get-version@develop
       - run: echo the Dnn version is ${{ toJson(steps.dnnVersion.outputs.version) }}
-      - name: Hello World
-        uses: valadas/gh-action-template@develop
-        id: greet
-        with:
-          who-to-greet: Language Pack
-      - run: echo The greeting is ${{ steps.greet.outputs.greeting }}
       - run: npm install
       - run: npm run build
       - uses: ./.github/actions/debug-action
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+          version: ${{ steps.dnnVersion.outputs.version.manifestSafeVersionString }}
         id: debug
       - run: echo There was an amazing message - ${{ steps.debug.outputs.amazing-message }}
