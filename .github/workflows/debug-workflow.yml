@@ -12,7 +12,8 @@ jobs:
       - name: Get Dnn Version
         id: dnnVersion
         uses: valadas/dnn-platform-get-version@develop
-      - run: |
+      - name: Print Dnn version
+        run: |
              echo tag ${{ steps.dnnVersion.outputs.tag }}
              echo major ${{ steps.dnnVersion.outputs.major }}
              echo minor ${{ steps.dnnVersion.outputs.minor }}
