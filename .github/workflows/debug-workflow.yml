@@ -12,13 +12,17 @@ jobs:
       - name: Get Dnn Version
         id: dnnVersion
         uses: valadas/dnn-platform-get-version@develop
-      - run: echo the Dnn version is ${{ toJson(steps.dnnVersion.outputs.version) }}
-      - run: echo the manifestSaveVersionString is ${{ toJson(steps.dnnVersion.outputs.version).manifestSafeVersionString }}
+      - run: echo Dnn version |
+             tag ${{ steps.dnnVersion.outputs.tag }}
+             major ${{ steps.dnnVersion.outputs.major }}
+             minor ${{ steps.dnnVersion.outputs.minor }}
+             patch ${{ steps.dnnVersion.outputs.patch }}
+             manifestSafeVersionString ${{ steps.dnnVersion.outputs.manifestSafeVersionString }}
       - run: npm install
       - run: npm run build
       - uses: ./.github/actions/debug-action
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          version: ${{ steps.dnnVersion.outputs.version.manifestSafeVersionString }}
+          version: ${{ steps.dnnVersion.outputs.manifestSafeVersionString }}
         id: debug
       - run: echo There was an amazing message - ${{ steps.debug.outputs.amazing-message }}
