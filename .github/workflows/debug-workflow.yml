@@ -12,12 +12,12 @@ jobs:
       - name: Get Dnn Version
         id: dnnVersion
         uses: valadas/dnn-platform-get-version@develop
-      - run: echo Dnn version |
-             tag ${{ steps.dnnVersion.outputs.tag }}
-             major ${{ steps.dnnVersion.outputs.major }}
-             minor ${{ steps.dnnVersion.outputs.minor }}
-             patch ${{ steps.dnnVersion.outputs.patch }}
-             manifestSafeVersionString ${{ steps.dnnVersion.outputs.manifestSafeVersionString }}
+      - run: |
+             echo tag ${{ steps.dnnVersion.outputs.tag }}
+             echo major ${{ steps.dnnVersion.outputs.major }}
+             echo minor ${{ steps.dnnVersion.outputs.minor }}
+             echo patch ${{ steps.dnnVersion.outputs.patch }}
+             echo manifestSafeVersionString ${{ steps.dnnVersion.outputs.manifestSafeVersionString }}
       - run: npm install
       - run: npm run build
       - uses: ./.github/actions/debug-action
