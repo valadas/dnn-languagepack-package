@@ -13,6 +13,7 @@ jobs:
         id: dnnVersion
         uses: valadas/dnn-platform-get-version@develop
       - run: echo the Dnn version is ${{ toJson(steps.dnnVersion.outputs.version) }}
+      - run: echo the manifestSaveVersionString is ${{ toJson(steps.dnnVersion.outputs.version).manifestSafeVersionString }}
       - run: npm install
       - run: npm run build
       - uses: ./.github/actions/debug-action
